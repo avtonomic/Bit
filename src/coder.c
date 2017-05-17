@@ -76,9 +76,15 @@ int read_next_code_unit(FILE *in, CodeUnits *code_units)
 
 		for (size_t i = 1; i < code_units->length; i++) {
 			fread(&code_units->code[i], 1, 1, in);
+			//printf("Byte №%zu = %x\n", i, code_units->code[i]);
 
 			if ((code_units->code[i] & 0xc0) != 0x80) {
-				fseek(in, -1, SEEK_CUR);
+				//printf("INCORRECT BYTE №%zu = %x\n", i, code_units->code[i]);
+				if (i != (code_units->length - 1)) {
+					fread(&code_units->code[i], 1, 1, in);
+					//printf("NEW BYTE №%zu = %x\n", i, code_units->code[i]);
+				}
+				code_units->length--;
 				continue;
 			}
 			if (i != code_units->length - 1) {
@@ -87,7 +93,8 @@ int read_next_code_unit(FILE *in, CodeUnits *code_units)
 				}
 			}
 		}
-
+		//printf("Length = %zu\n", code_units->length);
+		//printf("Last byte = %x\n", code_units->code[code_units->length - 1]);
 		return 0;
 	}
 
